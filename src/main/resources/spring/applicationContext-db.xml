@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xsi:schemaLocation=" 
+          http://www.springframework.org/schema/beans 
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+          http://www.springframework.org/schema/tx 
+          http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+          http://www.springframework.org/schema/context 
+          http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+          http://www.springframework.org/schema/aop 
+          http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
+          default-autowire="byName" default-lazy-init="false">
+          
+	<bean id="cloudDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${monitor.jdbc.driverClassName}" />
+		<property name="jdbcUrl" value="${monitor.jdbc.url}" />
+		<property name="user" value="${monitor.jdbc.username}" />
+		<property name="password" value="${monitor.jdbc.password}" />
+		<property name="maxPoolSize" value="${DEFAULT.MAXPOOLSIZE}" />
+		<property name="minPoolSize" value="${DEFAULT.MINPOOLSIZE}" />
+		<property name="maxIdleTime" value="${DEFAULT.MAXIDLETIME}" />
+    </bean>
+	
+	 <aop:config>
+	 <!--  
+        <aop:advisor
+            pointcut="execution(* com.asiainfo.crm.dao..*DAO*.*(..))"
+            advice-ref="txAdvice" order="0" />
+      -->
+		<aop:advisor id="managerTx" advice-ref="txAdvice"
+			pointcut="execution(* com.ailk.cake.service..*Manager.*(..))"
+			order="0" />
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="txManagerForMonitor">
+		<tx:attributes>
+		  <!--  
+			<tx:method name="get*"  propagation="REQUIRED" read-only="true" />
+			<tx:method name="find*" propagation="REQUIRED" read-only="true" />
+	     -->
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	
+	 <bean id="txManagerForMonitor" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="cloudDataSource"/>
+    </bean>
+    
+
+</beans>
